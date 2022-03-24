@@ -1,3 +1,3 @@
+rootProject.name = "bevm"
 
-rootProject.name = "itmo-bevm"
-
+include("cli")
