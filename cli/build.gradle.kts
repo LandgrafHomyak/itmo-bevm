@@ -24,25 +24,38 @@ kotlin {
     nativeTarget.apply {
         binaries {
             executable {
-                entryPoint = "main"
+                entryPoint = "com.github.landgrafhomyak.itmo_bevm.cli.mainNative"
                 this.outputDirectory = projectDir.resolve("out")
                 baseName = "bevm"
-                println("ertyuiop[")
-                tasks.findByName("collectCli") ?: tasks.create<Copy>("collectCli") {
-                    println("This task used only for GitHub CI")
-                    dependsOn(tasks["build"])
-                    from(this@executable.outputFile)
-                    into(rootProject.projectDir.resolve("dist"))
-                }
+                buildType
+                if (buildType == org.jetbrains.kotlin.gradle.plugin.mpp.NativeBuildType.RELEASE)
+                    tasks.create<Copy>("collectCli") {
+//                        println("This task used only for GitHub CI")
+                        dependsOn(this@executable.linkTask)
+                        from(this@executable.outputFile)
+                        into(rootProject.projectDir.resolve("dist"))
+                    }
             }
         }
     }
+
+    jvm {
+        compilations.all {
+            kotlinOptions.jvmTarget = "1.8"
+        }
+        withJava()
+        testRuns["test"].executionTask.configure {
+            useJUnitPlatform()
+        }
+    }
+
     sourceSets {
-        val nativeMain by getting {
+        val commonMain by getting {
             dependencies {
                 implementation(project(":"))
             }
         }
-        val nativeTest by getting
+        val nativeMain by getting
+        val jvmMain by getting
     }
 }
