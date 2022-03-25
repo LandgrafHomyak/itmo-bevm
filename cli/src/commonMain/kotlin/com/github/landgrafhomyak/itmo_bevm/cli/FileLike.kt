@@ -1,7 +1,15 @@
 package com.github.landgrafhomyak.itmo_bevm.cli
 
-interface FileLike {
-    fun readAll()
-    fun write()
+sealed interface FileLike {
     fun close()
+
+    interface Binary : FileLike {
+        fun readAll(): UByteArray
+        fun write(ba: UByteArray)
+    }
+
+    interface Text : FileLike {
+        fun readAll(): String
+        fun write(s: String)
+    }
 }
