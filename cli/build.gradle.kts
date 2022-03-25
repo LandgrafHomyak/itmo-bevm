@@ -22,14 +22,13 @@ kotlin {
     }
 
     nativeTarget.apply {
-        /*
+
         val main by compilations.getting
         val fileIo by main.cinterops.creating {
             defFile("./src/nativeMain/c/fileIo.def")
-            includeDirs("./src/nativeMain/c/")
             packageName("com.github.landgrafhomyak.itmo_bevm.cli")
         }
-         */
+
         binaries {
             executable {
 

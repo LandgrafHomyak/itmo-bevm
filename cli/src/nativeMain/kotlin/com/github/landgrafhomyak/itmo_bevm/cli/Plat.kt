@@ -8,6 +8,7 @@ import kotlinx.cinterop.UByteVar
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.get
 import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.toKString
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
 import platform.posix.SEEK_END
@@ -37,17 +38,15 @@ actual fun exit(code: Int): Nothing {
     exitProcess(code)
 }
 
-// todo сделать нормальное чтение и запись (в идеале на С)
-
 actual class BinaryFile actual constructor(path: String) : FileLike.Binary {
     private val real = fopen(path, "ba+")
 
     override fun readAll(): UByteArray {
-        fseek(this.real, SEEK_END, 0);
-        val len = ftell(this.real)
-        val p = malloc(len.toULong() + 1u)!!
-        fread(p, 1, len.toSizeT(), this.real)
-        return UByteArray(len) { i -> p.reinterpret<UByteVar>()[i] }.also { free(p) }
+        val len = nativeGetLength(this.real)
+        return ByteArray(len).usePinned { pinned ->
+            nativeReadAll(pinned.addressOf(0), len, this@BinaryFile.real)
+            return@usePinned pinned.get()
+        }.toUByteArray()
     }
 
     override fun write(ba: UByteArray) {
@@ -65,11 +64,12 @@ actual class TextFile actual constructor(path: String) : FileLike.Text {
     private val real = fopen(path, "ta+")
 
     override fun readAll(): String {
-        fseek(this.real, SEEK_END, 0);
-        val len = ftell(this.real)
-        val p = malloc(len.toULong() + 1u)!!
-        fread(p, 1, len.toSizeT(), this.real)
-        return p.reinterpret<ByteVar>().toKStringFromUtf8().also { free(p) }
+        val len = nativeGetLength(this.real)
+        return ByteArray(len + 1).usePinned { pinned ->
+            nativeReadAll(pinned.addressOf(0), len, this@TextFile.real)
+            pinned.get()[len] = 0
+            return@usePinned pinned.addressOf(0).toKStringFromUtf8()
+        }
     }
 
     override fun write(s: String) {
@@ -83,11 +83,11 @@ actual class TextFile actual constructor(path: String) : FileLike.Text {
 
 actual object BinaryStd : FileLike.Binary {
     override fun readAll(): UByteArray {
-        fseek(stdin, SEEK_END, 0);
-        val len = ftell(stdin)
-        val p = malloc(len.toULong() + 1u)!!
-        fread(p, 1, len.toSizeT(), stdin)
-        return UByteArray(len) { i -> p.reinterpret<UByteVar>()[i] }.also { free(p) }
+        val len = nativeGetLength(stdin)
+        return ByteArray(len).usePinned { pinned ->
+            nativeReadAll(pinned.addressOf(0), len, stdin)
+            return@usePinned pinned.get()
+        }.toUByteArray()
     }
 
     override fun write(ba: UByteArray) {
