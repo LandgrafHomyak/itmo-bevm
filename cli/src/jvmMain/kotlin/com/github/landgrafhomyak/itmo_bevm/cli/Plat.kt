@@ -24,7 +24,10 @@ actual class BinaryFile actual constructor(path: String) : FileLike.Binary {
         this.real.writeBytes(ba.toByteArray())
     }
 
-    override fun close() {}
+    override fun create() {
+        this.real.delete()
+        this.real.createNewFile()
+    }
 }
 
 actual class TextFile actual constructor(path: String) : FileLike.Text {
@@ -36,15 +39,29 @@ actual class TextFile actual constructor(path: String) : FileLike.Text {
         this.real.writeText(s, Charsets.UTF_8)
     }
 
-    override fun close() {}
+    override fun create() {
+        this.real.delete()
+        this.real.createNewFile()
+    }
 }
 
 actual object BinaryStd : FileLike.Binary {
-    override fun close() {}
 
     override fun readAll(): UByteArray = System.`in`.readAllBytes().toUByteArray()
 
     override fun write(ba: UByteArray) {
         System.out.write(ba.toByteArray())
     }
+
+    override fun create() {}
+}
+
+actual object TextStd : FileLike.Text {
+    override fun readAll(): String = System.`in`.readAllBytes().toString(Charsets.UTF_8)
+
+    override fun write(s: String) {
+        print(s)
+    }
+
+    override fun create() {}
 }

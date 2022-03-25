@@ -3,28 +3,24 @@
 
 package com.github.landgrafhomyak.itmo_bevm.cli
 
-import kotlinx.cinterop.ByteVar
-import kotlinx.cinterop.UByteVar
+import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.addressOf
-import kotlinx.cinterop.get
-import kotlinx.cinterop.reinterpret
+import kotlinx.cinterop.cstr
 import kotlinx.cinterop.toKString
 import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
-import platform.posix.SEEK_END
+import platform.posix.FILE
 import platform.posix.fclose
 import platform.posix.fopen
 import platform.posix.fprintf
 import platform.posix.fputs
-import platform.posix.fread
-import platform.posix.free
-import platform.posix.fseek
-import platform.posix.ftell
+import platform.posix.freopen
 import platform.posix.fwrite
-import platform.posix.malloc
+import platform.posix.puts
 import platform.posix.stderr
 import platform.posix.stdin
 import platform.posix.stdout
+import platform.posix.strlen
 import kotlin.system.exitProcess
 
 inline fun Int.toSizeT() = this.toULong()
@@ -38,63 +34,81 @@ actual fun exit(code: Int): Nothing {
     exitProcess(code)
 }
 
-actual class BinaryFile actual constructor(path: String) : FileLike.Binary {
-    private val real = fopen(path, "ba+")
+private fun commonReadAll(file: CPointer<FILE>): ByteArray {
+    val chunks = mutableListOf<List<Byte>>()
+    while (true) {
+        chunks.add(ByteArray(256).usePinned { pinned ->
+            val read = nativeRead(pinned.addressOf(0), 256, file)
+            return@usePinned pinned.get().slice(0 until read)
+        })
+        if (chunks.last().size < 256) break
+    }
+    return chunks.flatten().toByteArray()
+}
+
+actual class BinaryFile actual constructor(private val path: String) : FileLike.Binary {
 
     override fun readAll(): UByteArray {
-        val len = nativeGetLength(this.real)
-        return ByteArray(len).usePinned { pinned ->
-            nativeReadAll(pinned.addressOf(0), len, this@BinaryFile.real)
-            return@usePinned pinned.get()
-        }.toUByteArray()
+        val file = fopen(this.path, "rb") ?: throw FileAccessError(this.path)
+        return commonReadAll(file).toUByteArray().also { fclose(file) }
     }
 
     override fun write(ba: UByteArray) {
+        val file = fopen(this.path, "ab") ?: throw FileAccessError(this.path)
         ba.usePinned { pinned ->
-            fwrite(pinned.addressOf(0), 1, ba.size.toSizeT(), this.real)
+            fwrite(pinned.addressOf(0), 1, ba.size.toSizeT(), file)
         }
+        fclose(file)
     }
 
-    override fun close() {
-        fclose(real)
+    override fun create() {
+        fclose(fopen(this.path, "wb") ?: throw FileAccessError(this.path))
     }
 }
 
-actual class TextFile actual constructor(path: String) : FileLike.Text {
-    private val real = fopen(path, "ta+")
-
+actual class TextFile actual constructor(val path: String) : FileLike.Text {
     override fun readAll(): String {
-        val len = nativeGetLength(this.real)
-        return ByteArray(len + 1).usePinned { pinned ->
-            nativeReadAll(pinned.addressOf(0), len, this@TextFile.real)
-            pinned.get()[len] = 0
-            return@usePinned pinned.addressOf(0).toKStringFromUtf8()
-        }
+        val file = fopen(this.path, "rt") ?: throw FileAccessError(this.path)
+        return commonReadAll(file).toKString().also { fclose(file) }
     }
 
     override fun write(s: String) {
-        fputs(s, this.real)
+        val file = fopen(this.path, "at") ?: throw FileAccessError(this.path)
+        nativeWrite(s.cstr, strlen(s).toInt(), stdout)
+        fclose(file)
     }
 
-    override fun close() {
-        fclose(real)
+    override fun create() {
+        fclose(fopen(this.path, "wt") ?: throw FileAccessError(this.path))
     }
 }
 
 actual object BinaryStd : FileLike.Binary {
     override fun readAll(): UByteArray {
-        val len = nativeGetLength(stdin)
-        return ByteArray(len).usePinned { pinned ->
-            nativeReadAll(pinned.addressOf(0), len, stdin)
-            return@usePinned pinned.get()
-        }.toUByteArray()
+        freopen(null, "rb", stdin)
+        return commonReadAll(stdin!!).toUByteArray()
     }
 
     override fun write(ba: UByteArray) {
+        freopen(null, "wb", stdout)
         ba.usePinned { pinned ->
             fwrite(pinned.addressOf(0), 1, ba.size.toSizeT(), stdout)
         }
     }
 
-    override fun close() {}
+    override fun create() {}
+}
+
+actual object TextStd : FileLike.Text {
+    override fun readAll(): String {
+        freopen(null, "rt", stdin)
+        return commonReadAll(stdin!!).toKString()
+    }
+
+    override fun write(s: String) {
+        freopen(null, "wb", stdout)
+        nativeWrite(s.cstr, strlen(s).toInt(), stdout)
+    }
+
+    override fun create() {}
 }

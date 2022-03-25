@@ -8,7 +8,8 @@ class Option(
 ) {
 
     enum class OptionType(val label: String) {
-        File("файл"),
+        BinFile("бинарный файл"),
+        TextFile("текстовый файл"),
         Unsigned("беззнаковое число")
     }
 }

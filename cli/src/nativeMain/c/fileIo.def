@@ -1,16 +1,9 @@
 ---
 #include <stdio.h>
 
-static inline int nativeGetLength(FILE *file) {
-    int pos;
-
-    fseek(file, SEEK_END, 0);
-    pos = ftell(file);
-    fseek(file, SEEK_SET, 0);
-
-    return pos;
+static inline int nativeRead(char *buffer, int len, FILE *file) {
+    return fread(buffer, 1, len, file);
 }
-
-static inline void nativeReadAll(char *buffer, int len, FILE *file) {
-    fread(buffer, 1, len, file);
+static inline void nativeWrite(char *buffer, int len, FILE *file) {
+    fwrite(buffer, 1, len, file);
 }
