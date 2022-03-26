@@ -125,6 +125,19 @@ class Processor<T : AbstractCommand>(
         }
 
         fun dump(): Array<UByte> = (0u until size).map(this::get).map(BevmByte::toUnsigned).flatMap { u -> listOf((u shr 8) and 0xffu, u and 0xffu) }.map(UInt::toUByte).toTypedArray()
+
+        fun load(image: Array<UByte>): Unit = (image.indices step 2).map { i ->
+            (image[i].toUInt() shl 8) or (if (i + 1 < image.size) image[i + 1].toUInt() else 0u)
+        }.map(BevmByte::fromUnsigned).toTypedArray().let(this::load)
+
+        fun load(image: Array<BevmByte>) {
+            if (image.size.toUInt() != this@Memory.size) {
+                throw IllegalArgumentException("image has wrong size")
+            }
+            for (a in this@Memory.data.indices) {
+                this.data[a] = image[a]
+            }
+        }
     }
 
     @JvmField

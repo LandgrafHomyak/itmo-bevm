@@ -3,6 +3,10 @@
 
 package com.github.landgrafhomyak.itmo_bevm.cli
 
+import com.github.landgrafhomyak.itmo_bevm.BevmByte
+import com.github.landgrafhomyak.itmo_bevm.DefaultCommandRegistry
+import com.github.landgrafhomyak.itmo_bevm.Processor
+
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 enum class Commands(
     val alias: String,
@@ -49,14 +53,37 @@ enum class Commands(
     ),
     Run("run", "запускает скомпилированную программу",
         mapOf(
-            "out" to Option(Option.OptionType.BinFile, true, "--dump"),
+            "out" to Option(Option.OptionType.BinFile, false, "--dump"),
             "start" to Option(Option.OptionType.Unsigned, false, "-ip"),
             "in" to Option(Option.OptionType.BinFile, true)
         ),
         action@{ args ->
-            val `in`: FileLike.Binary = (args["in"] ?: BinaryStd) as FileLike.Binary
-            val out: FileLike.Binary = (args["out"] ?: BinaryStd) as FileLike.Binary
+            val `in`: FileLike.Binary = args["in"]!! as FileLike.Binary
+            val out: FileLike.Binary? = args["out"] as FileLike.Binary?
             val start: UInt = (args["ip"] ?: 0u) as UInt
+
+            val image = `in`.readAll()
+            val proc = Processor(DefaultCommandRegistry)
+
+            if (start >= proc.memory.size) {
+                eprintln("Невалидный стартовый адрес")
+                return@action -1
+            }
+
+            if (image.size.toUInt() > proc.memory.size * 2u) {
+                eprintln("Образ слишком большой")
+                return@action -1
+            }
+
+            proc.memory.load((image + Array(proc.memory.size.toInt() * 2 - image.size) { (0).toUByte() }))
+
+            proc.runAt(start)
+
+            val dump = proc.memory.dump()
+
+            viewBin(TextStd, dump, 16u, true)
+
+            out?.write(dump)
 
             return@action 0
         }
@@ -80,21 +107,7 @@ enum class Commands(
                 eprintln("Длинна строки должна быть больше нуля")
                 return@action -1
             }
-
-            val data = `in`.readAll().let { data ->
-                return@let if (word) {
-                    (data.indices step 2).map { i -> (data[i].toUInt() shl 8) or (if (i + 1 < data.size) data[i + 1].toUInt() else 0u) }.toUIntArray()
-                } else {
-                    data.map(UByte::toUInt).toUIntArray()
-                }
-            }
-            val addressSize = data.size.toString(16).length
-            for (pos in data.indices step len.toInt()) {
-                out.write("0x${pos.toString(16).padStart(addressSize, '0')} | ")
-                out.write(data.slice(pos until min(pos + len.toInt(), data.size)).joinToString(separator = " ") { b -> b.toString(16).padStart(if (word) 4 else 2, '0') })
-                out.write("\n")
-            }
-
+            viewBin(out, `in`.readAll(), len, word)
             return@action 0
         }
     )
@@ -119,4 +132,6 @@ enum class Commands(
             }
         }
     }
+
+
 }

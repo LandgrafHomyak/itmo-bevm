@@ -7,8 +7,8 @@ sealed interface FileLike {
     fun create()
 
     interface Binary : FileLike {
-        fun readAll(): UByteArray
-        fun write(ba: UByteArray)
+        fun readAll():  Array<UByte>
+        fun write(ba: Array<UByte>)
     }
 
     interface Text : FileLike {

@@ -18,10 +18,10 @@ actual fun exit(code: Int): Nothing {
 actual class BinaryFile actual constructor(path: String) : FileLike.Binary {
     private val real = File(path)
 
-    override fun readAll(): UByteArray = this.real.readBytes().toUByteArray()
+    override fun readAll(): Array<UByte> = this.real.readBytes().toUByteArray().toTypedArray()
 
-    override fun write(ba: UByteArray) {
-        this.real.writeBytes(ba.toByteArray())
+    override fun write(ba: Array<UByte>) {
+        this.real.writeBytes(ba.toUByteArray().toByteArray())
     }
 
     override fun create() {
@@ -47,10 +47,10 @@ actual class TextFile actual constructor(path: String) : FileLike.Text {
 
 actual object BinaryStd : FileLike.Binary {
 
-    override fun readAll(): UByteArray = System.`in`.readAllBytes().toUByteArray()
+    override fun readAll(): Array<UByte> = System.`in`.readAllBytes().toUByteArray().toTypedArray()
 
-    override fun write(ba: UByteArray) {
-        System.out.write(ba.toByteArray())
+    override fun write(ba: Array<UByte>) {
+        System.out.write(ba.toUByteArray().toByteArray())
     }
 
     override fun create() {}

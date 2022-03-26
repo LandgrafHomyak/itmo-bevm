@@ -7,16 +7,13 @@ import kotlinx.cinterop.CPointer
 import kotlinx.cinterop.addressOf
 import kotlinx.cinterop.cstr
 import kotlinx.cinterop.toKString
-import kotlinx.cinterop.toKStringFromUtf8
 import kotlinx.cinterop.usePinned
 import platform.posix.FILE
 import platform.posix.fclose
 import platform.posix.fopen
 import platform.posix.fprintf
-import platform.posix.fputs
 import platform.posix.freopen
 import platform.posix.fwrite
-import platform.posix.puts
 import platform.posix.stderr
 import platform.posix.stdin
 import platform.posix.stdout
@@ -48,14 +45,14 @@ private fun commonReadAll(file: CPointer<FILE>): ByteArray {
 
 actual class BinaryFile actual constructor(private val path: String) : FileLike.Binary {
 
-    override fun readAll(): UByteArray {
+    override fun readAll(): Array<UByte> {
         val file = fopen(this.path, "rb") ?: throw FileAccessError(this.path)
-        return commonReadAll(file).toUByteArray().also { fclose(file) }
+        return commonReadAll(file).toUByteArray().also { fclose(file) }.toTypedArray()
     }
 
-    override fun write(ba: UByteArray) {
+    override fun write(ba: Array<UByte>) {
         val file = fopen(this.path, "ab") ?: throw FileAccessError(this.path)
-        ba.usePinned { pinned ->
+        ba.toUByteArray().usePinned { pinned ->
             fwrite(pinned.addressOf(0), 1, ba.size.toSizeT(), file)
         }
         fclose(file)
@@ -84,14 +81,14 @@ actual class TextFile actual constructor(val path: String) : FileLike.Text {
 }
 
 actual object BinaryStd : FileLike.Binary {
-    override fun readAll(): UByteArray {
+    override fun readAll(): Array<UByte> {
         freopen(null, "rb", stdin)
-        return commonReadAll(stdin!!).toUByteArray()
+        return commonReadAll(stdin!!).toUByteArray().toTypedArray()
     }
 
-    override fun write(ba: UByteArray) {
+    override fun write(ba: Array<UByte>) {
         freopen(null, "wb", stdout)
-        ba.usePinned { pinned ->
+        ba.toUByteArray().usePinned { pinned ->
             fwrite(pinned.addressOf(0), 1, ba.size.toSizeT(), stdout)
         }
     }

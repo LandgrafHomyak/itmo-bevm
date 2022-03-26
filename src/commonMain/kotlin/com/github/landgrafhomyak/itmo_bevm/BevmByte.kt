@@ -115,8 +115,9 @@ class BevmByte private constructor(private val bits: Array<Boolean>) {
         var overflow = false
         @Suppress("RemoveRedundantQualifierName")
         return BevmByte.fromBits(*(0u until BevmByte.BITS_SIZE).map { b ->
-            carry = ((this[b] and other[b] and !carry) or (this[b] and !other[b] and carry) or (!this[b] and other[b] and carry)).also { newCarry -> overflow = newCarry xor carry }
-            return@map this[b] xor other[b] xor carry
+            return@map (this[b] xor other[b] xor carry).also {
+                carry = ((this[b] and other[b]) or (this[b] and carry) or (other[b] and carry)).also { newCarry -> overflow = newCarry xor carry }
+            }
         }.toBooleanArray()).also { result ->
             flags?.also {
                 flags.recalcFrom(result)
