@@ -141,8 +141,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
         SWAB {
             override fun execute(proc: Processor<*>) {
                 proc.registers.accumulator = BevmByte.fromBits(
-                    *(7u downTo 0u).map(proc.registers.accumulator::bit).toBooleanArray(),
-                    *(15u downTo 8u).map(proc.registers.accumulator::bit).toBooleanArray(),
+                    *(8u..15u).map(proc.registers.accumulator::bit).toBooleanArray(),
+                    *(0u..7u).map(proc.registers.accumulator::bit).toBooleanArray()
                 )
                 proc.flags.recalcFromAccumulator()
                 proc.flags.overflow = false
@@ -373,7 +373,7 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
 
         LD {
             override fun execute(proc: Processor<*>) {
-                AddressType.resolveAndGet(proc)
+                proc.registers.accumulator = AddressType.resolveAndGet(proc)
                 proc.flags.recalcFromAccumulator()
                 proc.flags.overflow = false
             }
@@ -607,6 +607,7 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
         Constant {
             override fun resolve(proc: Processor<*>): BevmByte? {
                 proc.registers.buffer = proc.registers.command[0u..7u]
+                proc.registers.data = proc.registers.buffer
                 return null
             }
 
@@ -615,7 +616,6 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
 
         abstract fun resolve(proc: Processor<*>): BevmByte?
         abstract val prefix: Array<Boolean>
-
 
         companion object {
             private val searchTree = BinTree<AddressType>()

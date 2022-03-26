@@ -53,7 +53,7 @@ enum class Commands(
     Run("run", "запускает скомпилированную программу",
         mapOf(
             "out" to Option(Option.OptionType.BinFile, false, "--dump"),
-            "start" to Option(Option.OptionType.Unsigned, false, "-ip"),
+            "ip" to Option(Option.OptionType.Unsigned, false, "-ip"),
             "in" to Option(Option.OptionType.BinFile, true)
         ),
         action@{ args ->

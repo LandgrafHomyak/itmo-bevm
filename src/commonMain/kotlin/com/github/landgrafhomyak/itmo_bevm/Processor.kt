@@ -111,7 +111,7 @@ class Processor<T : AbstractCommand>(
         }
 
         operator fun set(address: UInt, value: BevmByte) {
-            this@Memory[address] = value
+            this@Memory.data[address.toInt()] = value
         }
 
         operator fun set(address: UInt, value: UInt) {
