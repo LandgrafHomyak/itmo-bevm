@@ -28,7 +28,7 @@ class BevmByte private constructor(private val bits: Array<Boolean>) {
         @Suppress("RemoveRedundantQualifierName")
         fun uninitialized() = BevmByte(Array(BevmByte.BITS_SIZE.toInt()) { false })
 
-        fun fromUnsigned(u: UInt) = BevmByte(Array(this.BITS_SIZE.toInt()) { i -> (u and (1u shl i) == 1u) })
+        fun fromUnsigned(u: UInt) = BevmByte(Array(this.BITS_SIZE.toInt()) { i -> (u and (1u shl i) != 0u) })
 
         fun fromBits(vararg bits: Boolean) = BevmByte(arrayOf(*bits.toTypedArray()))
         fun fromReversedBits(vararg bits: Boolean) = BevmByte(bits.reversed().toTypedArray())

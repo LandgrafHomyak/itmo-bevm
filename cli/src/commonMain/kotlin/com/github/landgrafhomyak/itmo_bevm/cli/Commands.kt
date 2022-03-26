@@ -3,7 +3,6 @@
 
 package com.github.landgrafhomyak.itmo_bevm.cli
 
-import com.github.landgrafhomyak.itmo_bevm.BevmByte
 import com.github.landgrafhomyak.itmo_bevm.DefaultCommandRegistry
 import com.github.landgrafhomyak.itmo_bevm.Processor
 
