@@ -16,7 +16,7 @@
 
 Для остальных операционных систем:
 
-### POSIX
+### Linux
 
 ```shell
 git clone https://github.com/landgrafhomyak/itmo-bevm tmp
@@ -24,7 +24,7 @@ cd tmp
 git checkout v0.0b0
 ./gradlew collectCli
 cd dist
-sudo mv bevm /bin
+sudo mv bevm.kexe /bin/bevm
 ```
 
 ### Windows
@@ -38,6 +38,16 @@ cd dist
 move /-Y bevm.exe "C:/Program Files/"
 ```
 
+### Mac OS
+
+```shell
+git clone https://github.com/landgrafhomyak/itmo-bevm tmp
+cd tmp
+git checkout v0.0b0
+./gradlew collectCli
+cd dist
+# bevm.kexe
+```
 ## Использование
 
 Выводит содержимое бинарного файла в консоль для удобного просмотра
