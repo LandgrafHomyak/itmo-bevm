@@ -54,11 +54,13 @@ enum class Commands(
         mapOf(
             "out" to Option(Option.OptionType.BinFile, false, "--dump"),
             "ip" to Option(Option.OptionType.Unsigned, false, "-ip"),
+            "len" to Option(Option.OptionType.Unsigned, false, "-l", "--length"),
             "in" to Option(Option.OptionType.BinFile, true)
         ),
         action@{ args ->
             val `in`: FileLike.Binary = args["in"]!! as FileLike.Binary
             val out: FileLike.Binary? = args["out"] as FileLike.Binary?
+            val len: UInt = (args["len"] ?: 16u) as UInt
             val start: UInt = (args["ip"] ?: 0u) as UInt
 
             val image = `in`.readAll()
@@ -80,7 +82,7 @@ enum class Commands(
 
             val dump = proc.memory.dump()
 
-            viewBin(TextStd, dump, 16u, true)
+            viewBin(TextStd, dump, len, true)
 
             out?.write(dump)
 
