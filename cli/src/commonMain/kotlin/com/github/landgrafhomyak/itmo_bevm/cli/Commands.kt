@@ -100,7 +100,7 @@ enum class Commands(
         ),
         action@{ args ->
             val `in`: FileLike.Binary = args["in"]!! as FileLike.Binary
-            val out: FileLike.Text = (args["out"] ?: TextStd) as FileLike.Text
+            val out: FileLike.Text? = args["out"] as FileLike.Text?
             val len: UInt = (args["len"] ?: 16u) as UInt
             val word: Boolean = args.containsKey("word")
 
@@ -108,7 +108,11 @@ enum class Commands(
                 eprintln("Длинна строки должна быть больше нуля")
                 return@action -1
             }
-            viewBin(out, `in`.readAll(), len, word)
+
+            val bin = `in`.readAll()
+            viewBin(TextStd, bin, len, word)
+            if (out != null)
+                viewBin(out, bin, len, word)
             return@action 0
         }
     )
