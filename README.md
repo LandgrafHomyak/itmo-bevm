@@ -12,7 +12,7 @@
 ## Установка
 
 Готовые бинарники для некоторых операционных систем есть
-на [странице релиза](https://github.com/landgrafhomyak/itmo-bevm/releases/tag/v0.0b0)
+на [странице релиза](https://github.com/landgrafhomyak/itmo-bevm/releases/tag/v0.0b1)
 
 Для остальных операционных систем:
 
@@ -21,7 +21,7 @@
 ```shell
 git clone https://github.com/landgrafhomyak/itmo-bevm tmp
 cd tmp
-git checkout v0.0b0
+git checkout v0.0b1
 ./gradlew collectCli
 cd dist
 sudo mv bevm.kexe /bin/bevm
@@ -32,7 +32,7 @@ sudo mv bevm.kexe /bin/bevm
 ```shell
 git clone https://github.com/landgrafhomyak/itmo-bevm tmp
 cd tmp
-git checkout v0.0b0
+git checkout v0.0b1
 ./gradlew collectCli
 cd dist
 move /-Y bevm.exe "C:/Program Files/"
@@ -43,7 +43,7 @@ move /-Y bevm.exe "C:/Program Files/"
 ```shell
 git clone https://github.com/landgrafhomyak/itmo-bevm tmp
 cd tmp
-git checkout v0.0b0
+git checkout v0.0b1
 ./gradlew collectCli
 cd dist
 # bevm.kexe
@@ -81,4 +81,28 @@ bevm run -l 4 -ip 2 somebinfile.bin
 # 0x0 | 00c4 ffff afc5 e000
 # 0x4 | afff 0680 3fff e001
 # 0x8 | 0740 2000 e000 0100
+```
+
+---
+Загружает образ памяти из файла (при необходимости дополняя нулями в конец), запускает выполнение в указанном месте и
+выводит трассировку программы
+
+`-o <файл>` дополнительно сохраняет трассировку в файл
+
+`-ip <беззнаковое число>` начальное значение регистра IP (указатель на начало программы в бинарном файле), по умолчание
+равен 0
+
+```shell
+bevm trace -ip 2 somebinfile.bin
+#  addr    cmd  |  AC   DR   BR   CR   PS   IP   IR   SP   AR  C V Z N |
+# 0x0002 - afc5 | 00c5 00c5 00c5 afc5 0080  003 0000  000  002 0 0 0 0 | LD #0xc5
+# 0x0003 - e000 | 00c5 00c5 0003 e000 0080  004 0000  000  000 0 0 0 0 | ST 0x000
+# 0x0004 - afff | 00ff 00ff 00ff afff 0080  005 0000  000  004 0 0 0 0 | LD #0xff
+# 0x0005 - 0680 | ff00 0680 0005 0680 0088  006 0000  000  005 0 0 0 + | SWAB
+# 0x0006 - 3fff | ffff ff00 00ff 3fff 0088  007 0000  000  006 0 0 0 + | OR #0xff
+# 0x0007 - e001 | ffff ffff 0007 e001 0088  008 0000  000  001 0 0 0 + | ST 0x001
+# 0x0008 - 0740 | fffe 0740 0008 0740 0089  009 0000  000  008 + 0 0 + | DEC
+# 0x0009 - 2000 | 00c4 00c5 0009 2000 0081  00a 0000  000  000 + 0 0 0 | AND 0x000
+# 0x000a - e000 | 00c4 00c4 000a e000 0081  00b 0000  000  000 + 0 0 0 | ST 0x000
+# 0x000b - 0100 | 00c4 0100 000b 0100 0081  00c 0000  000  00b + 0 0 0 | HLT
 ```

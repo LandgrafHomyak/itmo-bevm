@@ -3,7 +3,7 @@ plugins {
 }
 
 group = "com.github.landgrafhomyak"
-version = "0.0b0"
+version = "0.0b1"
 
 repositories {
     mavenCentral()

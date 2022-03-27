@@ -116,7 +116,7 @@ enum class Commands(
             return@action 0
         }
     ),
-    Trace("trace", "выполняет трассировку скомпилированной программу",
+    Trace("trace", "выполняет трассировку скомпилированной программы",
         mapOf(
             "out" to Option(Option.OptionType.TextFile, false, "-o", "--out"),
             "ip" to Option(Option.OptionType.Unsigned, false, "-ip"),
