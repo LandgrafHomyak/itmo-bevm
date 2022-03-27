@@ -96,11 +96,9 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
 
         ASL {
             override fun execute(proc: Processor<*>) {
-                val c = proc.registers.accumulator.signBit
-                proc.registers.accumulator = proc.registers.accumulator shl 1u
+                proc.registers.data = proc.registers.accumulator
+                proc.registers.accumulator = proc.registers.accumulator.plus(proc.registers.data)
                 proc.flags.recalcFromAccumulator()
-                proc.flags.carry = c
-                // proc.flags.overflow = TODO()
             }
 
             override val prefix: Array<Boolean> = arrayOf(

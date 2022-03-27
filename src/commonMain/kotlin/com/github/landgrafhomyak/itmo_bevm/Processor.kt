@@ -12,22 +12,22 @@ class Processor<T : AbstractCommand>(
         var accumulator: BevmByte = BevmByte.uninitialized()
 
         @JvmField
-        internal var data: BevmByte = BevmByte.uninitialized()
+        var data: BevmByte = BevmByte.uninitialized()
 
         @JvmField
-        internal var buffer: BevmByte = BevmByte.uninitialized()
+        var buffer: BevmByte = BevmByte.uninitialized()
 
         @JvmField
-        internal var command: BevmByte = BevmByte.uninitialized()
+        var command: BevmByte = BevmByte.uninitialized()
 
         @JvmField
-        internal var programState: BevmByte = BevmByte.uninitialized()
+        var programState: BevmByte = BevmByte.uninitialized()
 
         @JvmField
         var stackPointer: BevmByte = BevmByte.uninitialized()
 
         @JvmField
-        internal var input: BevmByte = BevmByte.uninitialized()
+        var input: BevmByte = BevmByte.uninitialized()
 
         @JvmField
         var instructionPointer: BevmByte = BevmByte.uninitialized()
@@ -146,18 +146,26 @@ class Processor<T : AbstractCommand>(
     /**
      * Запускает программу в заданном адресе
      */
-    fun runAt(address: UInt) {
+    fun runAt(address: UInt) = this.trace(address) { _, _ -> }
+
+    @Suppress("MemberVisibilityCanBePrivate")
+    fun trace(address: UInt, debugger: Processor<T>.(UInt, UInt) -> Unit) {
         this.flags.running = true
         this.registers.instructionPointer = BevmByte.fromUnsigned(address)
-        @Suppress("MemberVisibilityCanBePrivate")
+        this.registers.accumulator = BevmByte.fromUnsigned(0u)
+        this.flags.recalcFromAccumulator()
         while (true) {
+            val ip = this.registers.instructionPointer.toUnsigned()
             this.registers.buffer = this.registers.instructionPointer
             this.registers.command = this.memory[this.registers.instructionPointer++]
+            val cr = this.registers.command.toUnsigned()
             val command = this.commands.parse(this.registers.command)
             try {
                 command.execute(this)
             } catch (_: ShutdownSignal) {
                 break
+            } finally {
+                debugger(this, ip, cr)
             }
         }
         this.flags.running = false

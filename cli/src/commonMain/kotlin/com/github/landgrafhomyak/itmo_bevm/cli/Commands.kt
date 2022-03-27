@@ -115,7 +115,57 @@ enum class Commands(
                 viewBin(out, bin, len, word)
             return@action 0
         }
-    )
+    ),
+    Trace("trace", "выполняет трассировку скомпилированной программу",
+        mapOf(
+            "out" to Option(Option.OptionType.TextFile, false, "-o", "--out"),
+            "ip" to Option(Option.OptionType.Unsigned, false, "-ip"),
+            "in" to Option(Option.OptionType.BinFile, true)
+        ),
+        action@{ args ->
+            val `in`: FileLike.Binary = args["in"]!! as FileLike.Binary
+            val out: FileLike.Text? = args["out"] as FileLike.Text?
+            val start: UInt = (args["ip"] ?: 0u) as UInt
+
+            val image = `in`.readAll()
+            val proc = Processor(DefaultCommandRegistry)
+
+            if (start >= proc.memory.size) {
+                eprintln("Невалидный стартовый адрес")
+                return@action -1
+            }
+
+            if (image.size.toUInt() > proc.memory.size * 2u) {
+                eprintln("Образ слишком большой")
+                return@action -1
+            }
+
+            proc.memory.load((image + Array(proc.memory.size.toInt() * 2 - image.size) { (0).toUByte() }))
+
+            @Suppress("SpellCheckingInspection")
+            val h = " addr    cmd  |  AC   DR   BR   CR   PS   IP   IR   SP   AR  C V Z N | \n"
+            print(h)
+
+            out?.write(h)
+            proc.trace(start) { ip, cr ->
+                val s = "0x${ip.toString(16).padStart(4, '0')} - ${cr.toString(16).padStart(4, '0')} | " +
+                        "${registers.accumulator.formatToString()} ${registers.data.formatToString()} " +
+                        "${registers.buffer.formatToString()} ${registers.command.formatToString()} " +
+                        "${registers.programState.formatToString()}  ${registers.instructionPointer.formatToStringP()} " +
+                        "${registers.input.formatToString()}  ${registers.stackPointer.formatToStringP()} " +
+                        " ${registers.address.formatToStringP()} " +
+                        "${if (flags.carry) '+' else '0'} " +
+                        "${if (flags.overflow) '+' else '0'} " +
+                        "${if (flags.zero) '+' else '0'} " +
+                        "${if (flags.sign) '+' else '0'} " +
+                        "|\n"
+                print(s)
+                out?.write(s)
+            }
+
+            return@action 0
+        }
+    ),
     ;
 
     init {

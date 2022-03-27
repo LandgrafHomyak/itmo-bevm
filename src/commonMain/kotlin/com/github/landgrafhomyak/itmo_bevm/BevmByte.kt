@@ -159,4 +159,7 @@ class BevmByte private constructor(private val bits: Array<Boolean>) {
             return@map this[b] or other[b]
         }.toBooleanArray())
     }
+
+    fun formatToString() = this.toUnsigned().toString(16).padStart(4, '0')
+    fun formatToStringP() = this.toUnsigned().toString(16).padStart(3, '0')
 }
