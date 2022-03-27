@@ -101,7 +101,7 @@ class BevmByte private constructor(private val bits: Array<Boolean>) {
     @Suppress("RemoveRedundantQualifierName")
     infix fun ushr(offset: UInt): BevmByte = BevmByte(Array(BevmByte.BITS_SIZE.toInt()) { i -> if (i.toUInt() >= BevmByte.BITS_SIZE - offset) false else this[i.toUInt() + offset] })
 
-    fun isZero(): Boolean = !this.bits.any()
+    fun isZero(): Boolean = this.bits.none { b -> b }
 
     fun bit(bit: UInt) = this[bit]
 
