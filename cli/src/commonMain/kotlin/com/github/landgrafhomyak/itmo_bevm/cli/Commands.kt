@@ -143,12 +143,12 @@ enum class Commands(
             proc.memory.load((image + Array(proc.memory.size.toInt() * 2 - image.size) { (0).toUByte() }))
 
             @Suppress("SpellCheckingInspection")
-            val h = " addr    cmd  |  AC   DR   BR   CR   PS   IP   IR   SP   AR  C V Z N | \n"
+            val h = " addr   cmd  |  AC   DR   BR   CR   PS   IP   IR   SP   AR  C V Z N | \n"
             print(h)
 
             out?.write(h)
             proc.trace(start) { ip, cr, dec ->
-                val s = "0x${ip.toString(16).padStart(4, '0')} - ${cr.toString(16).padStart(4, '0')} | " +
+                val s = "0x${ip.toString(16).padStart(3, '0')} - ${cr.toString(16).padStart(4, '0')} | " +
                         "${registers.accumulator.formatToString()} ${registers.data.formatToString()} " +
                         "${registers.buffer.formatToString()} ${registers.command.formatToString()} " +
                         "${registers.programState.formatToString()}  ${registers.instructionPointer.formatToStringP()} " +
