@@ -147,7 +147,7 @@ enum class Commands(
             print(h)
 
             out?.write(h)
-            proc.trace(start) { ip, cr ->
+            proc.trace(start) { ip, cr, dec ->
                 val s = "0x${ip.toString(16).padStart(4, '0')} - ${cr.toString(16).padStart(4, '0')} | " +
                         "${registers.accumulator.formatToString()} ${registers.data.formatToString()} " +
                         "${registers.buffer.formatToString()} ${registers.command.formatToString()} " +
@@ -158,7 +158,7 @@ enum class Commands(
                         "${if (flags.overflow) '+' else '0'} " +
                         "${if (flags.zero) '+' else '0'} " +
                         "${if (flags.sign) '+' else '0'} " +
-                        "|\n"
+                        "| $dec\n"
                 print(s)
                 out?.write(s)
             }

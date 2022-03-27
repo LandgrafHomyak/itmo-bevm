@@ -146,10 +146,10 @@ class Processor<T : AbstractCommand>(
     /**
      * Запускает программу в заданном адресе
      */
-    fun runAt(address: UInt) = this.trace(address) { _, _ -> }
+    fun runAt(address: UInt) = this.trace(address) { _, _, _ -> }
 
     @Suppress("MemberVisibilityCanBePrivate")
-    fun trace(address: UInt, debugger: Processor<T>.(UInt, UInt) -> Unit) {
+    fun trace(address: UInt, debugger: Processor<T>.(UInt, UInt, String) -> Unit) {
         this.flags.running = true
         this.registers.instructionPointer = BevmByte.fromUnsigned(address)
         this.registers.accumulator = BevmByte.fromUnsigned(0u)
@@ -160,12 +160,13 @@ class Processor<T : AbstractCommand>(
             this.registers.command = this.memory[this.registers.instructionPointer++]
             val cr = this.registers.command.toUnsigned()
             val command = this.commands.parse(this.registers.command)
+            val dec = command.format(this.registers.command)
             try {
                 command.execute(this)
             } catch (_: ShutdownSignal) {
                 break
             } finally {
-                debugger(this, ip, cr)
+                debugger(this, ip, cr, dec)
             }
         }
         this.flags.running = false

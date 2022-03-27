@@ -5,9 +5,12 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
     enum class Commands : AbstractCommand {
         NOP {
             override fun execute(proc: Processor<*>) {}
+
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, false, false, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         HLT {
@@ -18,6 +21,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, false, false, true, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         CLA {
@@ -30,6 +35,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, false, true, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         NOT {
@@ -42,6 +49,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, false, true, false, true, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         CLC {
@@ -52,6 +61,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, false, true, true, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         CMC {
@@ -62,6 +73,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, false, true, true, true, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         ROL {
@@ -77,6 +90,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, false, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         ROR {
@@ -92,6 +107,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, false, false, true, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         ASL {
@@ -104,6 +121,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, false, true, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         ASR {
@@ -118,6 +137,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, false, true, true, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         @Suppress("SpellCheckingInspection")
@@ -133,14 +154,15 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, true, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         @Suppress("SpellCheckingInspection")
         SWAB {
             override fun execute(proc: Processor<*>) {
                 proc.registers.accumulator = BevmByte.fromBits(
-                    *(8u..15u).map(proc.registers.accumulator::bit).toBooleanArray(),
-                    *(0u..7u).map(proc.registers.accumulator::bit).toBooleanArray()
+                    *(8u..15u).map(proc.registers.accumulator::bit).toBooleanArray(), *(0u..7u).map(proc.registers.accumulator::bit).toBooleanArray()
                 )
                 proc.flags.recalcFromAccumulator()
                 proc.flags.overflow = false
@@ -149,6 +171,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, true, false, true, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         INC {
@@ -159,6 +183,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, true, true, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         DEC {
@@ -170,6 +196,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, true, true, false, true, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         NEG {
@@ -181,6 +209,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, false, true, true, true, true, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         POP {
@@ -194,6 +224,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, true, false, false, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         @Suppress("SpellCheckingInspection")
@@ -205,6 +237,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, true, false, false, true, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         RET {
@@ -215,6 +249,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, true, false, true, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         @Suppress("SpellCheckingInspection")
@@ -227,6 +263,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, true, false, true, true, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         PUSH {
@@ -238,6 +276,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, true, true, false, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         @Suppress("SpellCheckingInspection")
@@ -250,6 +290,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, true, true, false, true, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         SWAP {
@@ -265,6 +307,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, false, false, true, true, true, false, false, false, false, false, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         DI {
@@ -276,6 +320,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
                 false, false, false, true,
                 false, false, false, false,
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         EI {
@@ -288,6 +334,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
                 false, false, false, true,
                 false, false, false, true,
             )
+
+            override fun format(repr: BevmByte): String = this.mnemonic
         },
 
         AND {
@@ -300,6 +348,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, true, false,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         OR {
@@ -312,6 +362,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, false, true, true,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         ADD {
@@ -322,6 +374,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, true, false, false,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         ADC {
@@ -333,6 +387,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, true, false, true,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         SUB {
@@ -343,6 +399,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, true, true, false,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         CMP {
@@ -353,6 +411,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 false, true, true, true,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         LOOP {
@@ -367,6 +427,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 true, false, false, false,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         LD {
@@ -379,6 +441,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 true, false, true, false,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         SWAM {
@@ -394,6 +458,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 true, false, true, true,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         JUMP {
@@ -404,6 +470,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 true, true, false, false,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         CALL {
@@ -416,6 +484,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 true, true, false, true,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         ST {
@@ -427,6 +497,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             override val prefix: Array<Boolean> = arrayOf(
                 true, true, true, false,
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.resolve(repr).format(repr)}"
         },
 
         BZS {
@@ -435,9 +507,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, false, false, false
+                true, true, true, true, false, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BZC {
@@ -446,9 +519,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, false, false, true
+                true, true, true, true, false, false, false, true
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BNS {
@@ -458,9 +532,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
 
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, false, true, false
+                true, true, true, true, false, false, true, false
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BNC {
@@ -469,9 +544,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, false, true, true
+                true, true, true, true, false, false, true, true
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BCS {
@@ -480,9 +556,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, true, false, false
+                true, true, true, true, false, true, false, false
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BCC {
@@ -491,9 +568,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, true, false, true
+                true, true, true, true, false, true, false, true
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BVS {
@@ -503,9 +581,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
 
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, true, true, false
+                true, true, true, true, false, true, true, false
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BVC {
@@ -515,9 +594,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
 
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                false, true, false, true
+                true, true, true, true, false, true, false, true
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BLT {
@@ -526,9 +606,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                true, false, false, false
+                true, true, true, true, true, false, false, false
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         },
 
         BGE {
@@ -537,9 +618,10 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(
-                true, true, true, true,
-                true, false, false, true
+                true, true, true, true, true, false, false, true
             )
+
+            override fun format(repr: BevmByte): String = "${this.mnemonic} ${AddressType.OffsetPointer.format(repr)}"
         };
 
         abstract val prefix: Array<Boolean>
@@ -550,6 +632,7 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
         AbsolutePointer {
             override fun resolve(proc: Processor<*>): BevmByte = proc.registers.command[0u..10u]
             override val prefix: Array<Boolean> = arrayOf(false)
+            override fun format(repr: BevmByte): String = "0x" + repr[0u..10u].formatToStringP()
         },
 
         OffsetPointerPointer {
@@ -560,6 +643,7 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
 
             override val prefix: Array<Boolean> = arrayOf(true, false, false, false)
 
+            override fun format(repr: BevmByte): String = "*0x" + repr[0u..7u].toUnsigned().toString(16).padStart(2, '0')
         },
         OffsetPointerPointerIncrement {
             override fun resolve(proc: Processor<*>): BevmByte {
@@ -572,6 +656,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(true, false, true, false)
+            override fun format(repr: BevmByte): String = "*0x" + repr[0u..7u].toUnsigned().toString(16).padStart(2, '0') + "++"
+
         },
         OffsetPointerPointerDecrement {
             override fun resolve(proc: Processor<*>): BevmByte {
@@ -583,6 +669,8 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(true, false, true, true)
+            override fun format(repr: BevmByte): String = "--*0x" + repr[0u..7u].toUnsigned().toString(16).padStart(2, '0')
+
         },
         StackOffset {
             override fun resolve(proc: Processor<*>): BevmByte {
@@ -592,6 +680,7 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(true, true, false, false)
+            override fun format(repr: BevmByte): String = "s0x" + repr[0u..7u].toUnsigned().toString(16).padStart(2, '0')
         },
         OffsetPointer {
             override fun resolve(proc: Processor<*>): BevmByte {
@@ -601,6 +690,7 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(true, true, true, false)
+            override fun format(repr: BevmByte): String = "~0x" + repr[0u..7u].toUnsigned().toString(16).padStart(2, '0')
         },
         Constant {
             override fun resolve(proc: Processor<*>): BevmByte? {
@@ -610,17 +700,18 @@ object DefaultCommandRegistry : AbstractCommandRegistry<DefaultCommandRegistry.C
             }
 
             override val prefix: Array<Boolean> = arrayOf(true, true, true, true)
+            override fun format(repr: BevmByte): String = "#0x" + repr[0u..7u].toUnsigned().toString(16).padStart(2, '0')
         };
 
         abstract fun resolve(proc: Processor<*>): BevmByte?
         abstract val prefix: Array<Boolean>
+        abstract fun format(repr: BevmByte): String
 
         companion object {
             private val searchTree = BinTree<AddressType>()
 
             init {
-                @Suppress("RemoveRedundantQualifierName")
-                for (v in AddressType.values()) {
+                @Suppress("RemoveRedundantQualifierName") for (v in AddressType.values()) {
                     this.searchTree.add(v, *v.prefix.toBooleanArray())
                 }
             }
