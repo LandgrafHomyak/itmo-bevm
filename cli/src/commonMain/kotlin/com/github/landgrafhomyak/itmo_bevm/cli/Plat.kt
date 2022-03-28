@@ -1,4 +1,8 @@
+@file:JvmName("PlatCommonKt")
+
 package com.github.landgrafhomyak.itmo_bevm.cli
+
+import kotlin.jvm.JvmName
 
 @Suppress("SpellCheckingInspection")
 expect fun eprintln(s: String)

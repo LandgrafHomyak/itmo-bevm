@@ -33,6 +33,7 @@ class BinTree<T : Any> {
 
     @Suppress("MemberVisibilityCanBePrivate")
     inline fun find(seq: Iterator<Boolean>): T? = this.find(seq.asSequence().asIterable())
+
     @Suppress("unused")
     inline fun find(vararg seq: Boolean): T? = this.find(seq.asIterable())
     fun find(seq: Iterable<Boolean>): T? {
