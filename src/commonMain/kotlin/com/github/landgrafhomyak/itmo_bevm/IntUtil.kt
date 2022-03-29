@@ -31,3 +31,5 @@ operator fun <T> MutableList<T>.set(i: UInt, v: T) {
 operator fun <T> MutableList<T>.set(i: ULong, v: T) {
     this[i.toInt()] = v
 }
+
+fun UByte.toHex(tetrads: UByte) = this@toHex.toString(16).padStart(tetrads.toInt(), '0')

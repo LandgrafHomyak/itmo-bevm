@@ -2,81 +2,86 @@ package com.github.landgrafhomyak.itmo_bevm
 
 import kotlin.jvm.JvmStatic
 import kotlin.reflect.KClass
+import kotlin.reflect.safeCast
+
 
 @Suppress("ClassName", "PropertyName", "SpellCheckingInspection", "unused", "FunctionName")
-sealed class microprogram {
+class MicroprogramBuilder {
     companion object {
         @JvmStatic
-        operator fun invoke(builder: microprogram.() -> Unit): MicroprogramBundle {
-            val labels = CalcLabels().apply(builder).labels
-            val commands = Compile(labels).apply(builder).commands.toTypedArray()
-            return MicroprogramBundle(labels, commands)
+        fun microprogram(builder: MicroprogramBuilder.() -> Unit): MutableMicroprogram {
+            val mp = MicroprogramBuilder().apply(builder)
+            val commands = mp.objects.map { obj -> obj(mp.labels) }.toTypedArray().let { arr ->
+                return@let arr + Array(256 - arr.size) { Microcommand.Empty }
+            }
+
+            return object : MutableMicroprogram {
+                override val labels: MutableMap<String, UByte> = mp.labels
+                override val commands: Array<Microcommand> = commands
+            }
         }
     }
 
-    abstract operator fun String.unaryMinus(): UByte
-    abstract operator fun Nothing?.invoke(count: UByte)
-    abstract fun OP(vararg bits: Any)
-    abstract fun CTRL(vararg bits: Any)
+    private var mp: UByte = 0u
+    private val labels = mutableMapOf<String, UByte>()
+    private val objects = mutableListOf<(Map<String, UByte>) -> Microcommand>()
+    operator fun String.unaryMinus(): UByte {
+        if (this@unaryMinus in this@MicroprogramBuilder.labels)
+            throw LabelDuplicationException(this@unaryMinus)
+        this@MicroprogramBuilder.labels[this@unaryMinus] = this@MicroprogramBuilder.mp
+        return this@MicroprogramBuilder.mp
+    }
 
-    private class CalcLabels : microprogram() {
-        private var mp: UByte = 0u
-        val labels = mutableMapOf<String, UByte>()
-        override fun String.unaryMinus(): UByte {
-            if (this@unaryMinus in this@CalcLabels.labels)
-                throw LabelDuplicationException(this@unaryMinus)
-            this@CalcLabels.labels[this@unaryMinus] = this@CalcLabels.mp
-            return this@CalcLabels.mp
+    operator fun Nothing?.invoke(count: UByte) {
+        @Suppress("NAME_SHADOWING")
+        var count = count
+        while (count-- > 0u) {
+            this@MicroprogramBuilder.objects.add { Microcommand.Empty }
+            this@MicroprogramBuilder.mp++
         }
+    }
 
-        override fun Nothing?.invoke(count: UByte) {
-            this@CalcLabels.mp = (this@CalcLabels.mp + count).toUByte()
+    fun at(address: UByte) {
+        if (address < this.mp) {
+            throw IllegalArgumentException("Невозможно перезаписать микрокоманду по адресу 0x${address.toHex(2u)}")
         }
-
-        override fun OP(vararg bits: Any) {
-            this.mp++
-        }
-
-        override fun CTRL(vararg bits: Any) {
+        while (this.mp < address) {
+            this.objects.add { Microcommand.Empty }
             this.mp++
         }
     }
 
-    private class Compile(val labels: Map<String, UByte>) : microprogram() {
-        val commands = mutableListOf<Microcommand>()
-
-        override fun String.unaryMinus(): UByte {
-            return this@Compile.labels[this@unaryMinus]!!
+    private class IteratorScanner<T : Any>(
+        private val iterator: Iterator<T>,
+        private val bitsOrder: String
+    ) {
+        private var value: T? = null
+        private val used = mutableSetOf<KClass<*>>()
+        inline fun <reified R : Any> get(): R? {
+            if (this.value == null) {
+                if (!this.iterator.hasNext()) return null
+                this.value = this.iterator.next()
+            }
+            for (ucls in this.used) {
+                if (ucls.safeCast(this.value!!) != null) {
+                    throw WrongMCBitOrderException(this.bitsOrder)
+                }
+            }
+            this.used.add(R::class)
+            return (this.value as? R)?.also { this.value = null }
         }
 
-        override fun Nothing?.invoke(count: UByte) {
-            @Suppress("NAME_SHADOWING")
-            var count = count
-            while (count-- > 0u) {
-                this@Compile.commands.add(Microcommand.Empty)
+        fun assertEmpty() {
+            if (this.value != null || this.iterator.hasNext()) {
+                throw WrongMCBitOrderException(this.bitsOrder)
             }
         }
+    }
 
-        private class PostIterator<T : Any>(private val iterator: Iterator<T>) {
-            private var value: T? = null
-            private val used = mutableSetOf<KClass<*>>()
-            inline fun <reified R : Any> get(): R? {
-                if (this.value == null) {
-                    if (!this.iterator.hasNext()) return null
-                    this.value = this.iterator.next()
-                }
-                if (this.value!!::class in this.used) {
-                    throw WrongMCBitOrderException()
-                }
-                this.used.add(R::class)
-                return (this.value as? R)?.also { this.value = null }
-            }
-
-            fun hasNext() = this.iterator.hasNext()
-        }
-
-        override fun OP(vararg bits: Any) {
-            val i = PostIterator(bits.iterator())
+    fun OP(vararg bits: Any) {
+        this.mp++
+        this.objects.add {
+            val i = IteratorScanner(bits.iterator(), "{RDAC, RDBR, RDPS, RDIR}, {RDDR, RDCR, RDIP, RDSP}, COML, COMR, {PLS1, SORA}, {({LTOL, HTOL}, {HTOH, HTOL, SEXT}), (SHLT, SHL0), (SHRT, SHRF)}, SETC, SETV, STNZ, WRAC, WRDR, WRBR, WRCR, WRPS, WRIP, WRSP, WRAR, IO, INTS, HALT")
 
             @Suppress("RemoveExplicitTypeArguments")
             val mcc = Microcommand.Operation(
@@ -110,12 +115,15 @@ sealed class microprogram {
                 i.get<_INTS>() != null,
                 i.get<_HALT>() != null,
             )
-            this.commands.add(mcc)
-            if (i.hasNext()) throw WrongMCBitOrderException()
+            i.assertEmpty()
+            return@add mcc
         }
+    }
 
-        override fun CTRL(vararg bits: Any) {
-            val i = PostIterator(bits.iterator())
+    fun CTRL(vararg bits: Any) {
+        this.mp++
+        this.objects.add { labels ->
+            val i = IteratorScanner(bits.iterator(), "{RDAC, RDBR, RDPS, RDIR}, {RDDR, RDCR, RDIP, RDSP}, COML, COMR, {PLS1, SORA}, {LTOL, HTOL}, {HTOH, HTOL}, 0b01010101, true, \"GOTO LABEL\"")
             val chB: Array<Boolean>
             val cmpB: Boolean
 
@@ -141,14 +149,13 @@ sealed class microprogram {
                 chB[7],
                 i.get<Boolean>()!!.let { b ->
                     cmpB = b
-                    return@let this.labels[i.get<String>()!!]!!
+                    return@let labels[i.get<String>()!!]!!
                 },
                 cmpB
             )
-            this.commands.add(mcc)
-            if (i.hasNext()) throw WrongMCBitOrderException()
+            i.assertEmpty()
+            return@add mcc
         }
-
     }
 
     val RDDR get() = RegisterReadingRight.RDDR

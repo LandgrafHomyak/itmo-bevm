@@ -6,21 +6,21 @@ import kotlin.test.assertEquals
 
 class DefaultMicroprogramBundleTest {
     @Test
-    fun testLabels() {
-        val unchecked = defaultMicroprogramBundle.labels.keys.toMutableSet()
+    fun labels() {
+        val unchecked = DefaultMicroprogram.labels.keys.toMutableSet()
         @Suppress("SpellCheckingInspection")
         for ((lbl, addr) in labels) {
-            assertContains(defaultMicroprogramBundle.labels, lbl)
-            assertEquals(addr, defaultMicroprogramBundle.labels[lbl], "label '$lbl' have 0x${defaultMicroprogramBundle.labels[lbl]!!.toString(16).padStart(2, '0')}, expected 0x${addr.toString(16).padStart(2, '0')}")
+            assertContains(DefaultMicroprogram.labels, lbl)
+            assertEquals(addr, DefaultMicroprogram.labels[lbl], "label '$lbl' have 0x${DefaultMicroprogram.labels[lbl]!!.toString(16).padStart(2, '0')}, expected 0x${addr.toString(16).padStart(2, '0')}")
             unchecked.remove(lbl)
         }
         assertEquals(0, unchecked.size, "Left labels (unchecked): $unchecked")
     }
 
     @Test
-    fun testCodes() {
+    fun codes() {
         @Suppress("SpellCheckingInspection")
-        (defaultMicroprogramBundle.commands zip packedMicroprogramBundle).forEachIndexed { addr, (mcc, bin) ->
+        (DefaultMicroprogram.commands zip packedMicroprogramBundle).forEachIndexed { addr, (mcc, bin) ->
             assertEquals(bin, mcc.toUnsigned(), "at address 0x${addr.toString(16).padStart(2, '0')} expected 0x${bin.toString(16).padStart(10, '0')} actual 0x${mcc.toUnsigned().toString(16).padStart(10, '0')}")
         }
     }
@@ -389,4 +389,5 @@ private val packedMicroprogramBundle = arrayOf<ULong>(
     0x0004009080uL,
     0x4000000000uL,
     0x8001101040uL
+    // 0xE0
 )
