@@ -1,6 +1,5 @@
 package com.github.landgrafhomyak.itmo_bevm
 
-import com.github.landgrafhomyak.itmo_bevm.MicroprogramBuilder.Companion.microprogram
 import kotlin.test.Test
 import kotlin.test.assertFailsWith
 
@@ -14,12 +13,47 @@ class MicroprogramBuilderTest {
             }
         }
     }
+
     @Test
     fun bitDuplication() {
         assertFailsWith(WrongMCBitOrderException::class)
         {
             microprogram {
                 OP(RDDR, RDDR)
+            }
+        }
+    }
+
+    @Test
+    fun labelDuplication() {
+        assertFailsWith(LabelDuplicationException::class)
+        {
+            microprogram {
+                -"LABEL"
+                -"LABEL"
+            }
+        }
+    }
+
+    @Test
+    fun labelDuplicationInOverwrite() {
+        assertFailsWith(LabelDuplicationException::class)
+        {
+            microprogram {
+                -"LABEL"
+            }.overwrite {
+                -"LABEL"
+            }
+        }
+    }
+
+    @Test
+    fun tooLargeProgram() {
+        assertFailsWith(IndexOutOfBoundsException::class)
+        {
+            microprogram {
+                at((Microprogram.MICROPROGRAM_SIZE - 2u).toUByte())
+                null(2u)
             }
         }
     }

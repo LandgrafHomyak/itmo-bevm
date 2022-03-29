@@ -7,24 +7,35 @@ import kotlin.reflect.safeCast
 
 @Suppress("ClassName", "PropertyName", "SpellCheckingInspection", "unused", "FunctionName")
 class MicroprogramBuilder {
+
+    class MicroprogramWithBuildInfo(
+        override val labels: MutableMap<String, UByte>,
+        override val commands: Array<Microcommand>,
+        val mask: Array<Boolean>
+    ) : MutableMicroprogram()
+
     companion object {
         @JvmStatic
-        fun microprogram(builder: MicroprogramBuilder.() -> Unit): MutableMicroprogram {
-            val mp = MicroprogramBuilder().apply(builder)
-            val commands = mp.objects.map { obj -> obj(mp.labels) }.toTypedArray().let { arr ->
-                return@let arr + Array(256 - arr.size) { Microcommand.Empty }
-            }
-
-            return object : MutableMicroprogram {
-                override val labels: MutableMap<String, UByte> = mp.labels
-                override val commands: Array<Microcommand> = commands
-            }
+        internal fun build(builder: MicroprogramBuilder.() -> Unit): MicroprogramWithBuildInfo = MicroprogramBuilder().apply(builder).let { mp ->
+            return@let MicroprogramWithBuildInfo(
+                mp.labels,
+                mp.objects.map { obj -> obj(mp.labels) }.toTypedArray().padEnd(Microprogram.MICROPROGRAM_SIZE, Microcommand.Empty),
+                mp.mask.toTypedArray().padEnd(Microprogram.MICROPROGRAM_SIZE, false)
+            )
         }
     }
 
     private var mp: UByte = 0u
+        set(value) {
+            if (value < field) {
+                throw IndexOutOfBoundsException("Не хватает памяти для хранения микропрограммы")
+            }
+            field = value
+        }
     private val labels = mutableMapOf<String, UByte>()
     private val objects = mutableListOf<(Map<String, UByte>) -> Microcommand>()
+    private val mask = mutableListOf<Boolean>()
+
     operator fun String.unaryMinus(): UByte {
         if (this@unaryMinus in this@MicroprogramBuilder.labels)
             throw LabelDuplicationException(this@unaryMinus)
@@ -37,6 +48,7 @@ class MicroprogramBuilder {
         var count = count
         while (count-- > 0u) {
             this@MicroprogramBuilder.objects.add { Microcommand.Empty }
+            this@MicroprogramBuilder.mask.add(false)
             this@MicroprogramBuilder.mp++
         }
     }
@@ -47,6 +59,7 @@ class MicroprogramBuilder {
         }
         while (this.mp < address) {
             this.objects.add { Microcommand.Empty }
+            this@MicroprogramBuilder.mask.add(false)
             this.mp++
         }
     }
@@ -80,6 +93,7 @@ class MicroprogramBuilder {
 
     fun OP(vararg bits: Any) {
         this.mp++
+        this@MicroprogramBuilder.mask.add(true)
         this.objects.add {
             val i = IteratorScanner(bits.iterator(), "{RDAC, RDBR, RDPS, RDIR}, {RDDR, RDCR, RDIP, RDSP}, COML, COMR, {PLS1, SORA}, {({LTOL, HTOL}, {HTOH, HTOL, SEXT}), (SHLT, SHL0), (SHRT, SHRF)}, SETC, SETV, STNZ, WRAC, WRDR, WRBR, WRCR, WRPS, WRIP, WRSP, WRAR, IO, INTS, HALT")
 
@@ -122,6 +136,7 @@ class MicroprogramBuilder {
 
     fun CTRL(vararg bits: Any) {
         this.mp++
+        this@MicroprogramBuilder.mask.add(true)
         this.objects.add { labels ->
             val i = IteratorScanner(bits.iterator(), "{RDAC, RDBR, RDPS, RDIR}, {RDDR, RDCR, RDIP, RDSP}, COML, COMR, {PLS1, SORA}, {LTOL, HTOL}, {HTOH, HTOL}, 0b01010101, true, \"GOTO LABEL\"")
             val chB: Array<Boolean>
