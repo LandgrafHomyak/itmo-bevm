@@ -3,9 +3,6 @@
 
 package com.github.landgrafhomyak.itmo_bevm.cli
 
-import com.github.landgrafhomyak.itmo_bevm.DefaultCommandRegistry
-import com.github.landgrafhomyak.itmo_bevm.Processor
-
 @Suppress("MemberVisibilityCanBePrivate", "unused")
 enum class Commands(
     val alias: String,

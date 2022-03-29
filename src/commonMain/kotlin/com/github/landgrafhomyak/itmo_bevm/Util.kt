@@ -1,14 +1,8 @@
+@file:Suppress("unused")
+
 package com.github.landgrafhomyak.itmo_bevm
 
-fun packLE(vararg bits: Boolean): ULong {
-    var sum: ULong = 0uL
-    for (bit in bits.reversed()) {
-        sum = (sum shl 1) or (if (bit) 1u else 0u)
-    }
-    return sum
-}
-
-fun packBE(vararg bits: Boolean): ULong {
+private fun pack(bits: Iterable<Boolean>): ULong {
     var sum: ULong = 0uL
     for (bit in bits) {
         sum = (sum shl 1) or (if (bit) 1u else 0u)
@@ -16,9 +10,15 @@ fun packBE(vararg bits: Boolean): ULong {
     return sum
 }
 
-fun unpack(value: ULong, bitsCount: UByte): Array<Boolean> = Array(bitsCount.toInt()) { i ->
+fun packLE(vararg bits: Boolean) = pack(bits.reversed())
+
+fun packBE(vararg bits: Boolean) = pack(bits.asIterable())
+
+fun unpackLE(value: ULong, bitsCount: UByte): Array<Boolean> = Array(bitsCount.toInt()) { i ->
     (value and (1uL shl i)) != 0uL
 }
+
+fun unpackBE(value: ULong, bitsCount: UByte): Array<Boolean> = unpackLE(value, bitsCount).reversedArray()
 
 operator fun <T> Array<T>.get(i: UInt) = this[i.toInt()]
 operator fun <T> Array<T>.get(i: ULong) = this[i.toInt()]

@@ -152,7 +152,7 @@ class MicroprogramBuilder {
                 i.get<CommutatorLoByteSource>(),
                 i.get<CommutatorHiByteSource>(),
                 (i.get<UByte>() ?: i.get<UShort>()?.toUByte() ?: i.get<UInt>()?.toUByte() ?: i.get<ULong>()?.toUByte())!!.let { v ->
-                    chB = unpack(v.toULong(), 8u)
+                    chB = unpackLE(v.toULong(), 8u)
                     return@let chB[0]
                 },
                 chB[1],

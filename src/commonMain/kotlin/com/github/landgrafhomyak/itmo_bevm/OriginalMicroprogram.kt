@@ -1,7 +1,7 @@
 package com.github.landgrafhomyak.itmo_bevm
 
 
-object DefaultMicroprogram : Microprogram {
+object OriginalMicroprogram : Microprogram, OriginalComponent {
     private inline fun MicroprogramBuilder.goto(label: String) = CTRL(RDPS, LTOL, 0b00010000u, false, label)
     private inline fun MicroprogramBuilder.ccr(bit: UByte, expected: Boolean, label: String) = CTRL(RDCR, if (bit >= 8u) HTOL else LTOL, 1u shl (if (bit >= 8u) (bit.toInt() - 8) else bit.toInt()), expected, label)
 

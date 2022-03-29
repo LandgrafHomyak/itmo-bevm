@@ -4,7 +4,7 @@ package com.github.landgrafhomyak.itmo_bevm
  *
  */
 @Suppress("SpellCheckingInspection", "MemberVisibilityCanBePrivate", "unused")
-sealed class Microcommand {
+sealed class Microcommand : BitAccessNumber {
     abstract val bit39: Boolean
     abstract val bit38: Boolean
     abstract val bit37: Boolean
@@ -46,7 +46,7 @@ sealed class Microcommand {
     abstract val bit1: Boolean
     abstract val bit0: Boolean
 
-    fun toUnsigned(): ULong = packBE(
+    override fun toUnsigned(): ULong = packBE(
         this.bit39, this.bit38, this.bit37, this.bit36, this.bit35, this.bit34, this.bit33, this.bit32,
         this.bit31, this.bit30, this.bit29, this.bit28, this.bit27, this.bit26, this.bit25, this.bit24,
         this.bit23, this.bit22, this.bit21, this.bit20, this.bit19, this.bit18, this.bit17, this.bit16,
@@ -208,7 +208,7 @@ sealed class Microcommand {
         override val bit34 get() = false
         override val bit33 get() = false
         override val bit32 by ::cmpB
-        private val addrUnpacked = unpack(this.addr.toULong(), 8u)
+        private val addrUnpacked = unpackLE(this.addr.toULong(), 8u)
         override val bit31 get() = this.addrUnpacked[7]
         override val bit30 get() = this.addrUnpacked[6]
         override val bit29 get() = this.addrUnpacked[5]
@@ -229,5 +229,30 @@ sealed class Microcommand {
         override val bit14 get() = this.cmtLbs?.bit14 ?: false
         override val bit13 get() = this.cmtHbs?.bit13 ?: false
         override val bit12 get() = this.cmtLbs?.bit12 ?: false
+
+        @Suppress("RemoveRedundantQualifierName")
+        fun goto(address: UByte) = Microcommand.Control(
+            this.rrL,
+            this.rrR,
+            this.invL,
+            this.invR,
+            this.aluOp,
+            this.cmtLbs,
+            this.cmtHbs,
+            this.chB0,
+            this.chB1,
+            this.chB2,
+            this.chB3,
+            this.chB4,
+            this.chB5,
+            this.chB6,
+            this.chB7,
+            address,
+            this.cmpB
+        )
+
+        val chB: UByte = packBE(
+            this.chB7, this.chB6, this.chB5, this.chB4, this.chB3, this.chB2, this.chB1, this.chB0
+        ).toUByte()
     }
 }
