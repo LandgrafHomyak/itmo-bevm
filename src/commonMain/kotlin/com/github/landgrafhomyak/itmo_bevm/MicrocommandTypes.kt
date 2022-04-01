@@ -191,9 +191,9 @@ sealed class ComutatorSourceCombination {
 
     class SHR(
         @Suppress("MemberVisibilityCanBePrivate")
-        val shrT: Boolean
+        val shrF: Boolean
     ) : ComutatorSourceCombination() {
-        override val bit20 by ::shrT
+        override val bit20 by ::shrF
         override val bit19 get() = true
         override val bit18 get() = false
         override val bit17 get() = false

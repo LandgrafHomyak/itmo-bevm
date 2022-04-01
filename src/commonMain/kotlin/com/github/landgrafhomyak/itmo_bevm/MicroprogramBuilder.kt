@@ -8,19 +8,26 @@ import kotlin.reflect.safeCast
 @Suppress("ClassName", "PropertyName", "SpellCheckingInspection", "unused", "FunctionName")
 class MicroprogramBuilder {
 
-    class MicroprogramWithBuildInfo(
+    class MicroprogramWithBuildInfo internal constructor(
         override val labels: MutableMap<String, UByte>,
         override val commands: Array<Microcommand>,
-        val mask: Array<Boolean>
-    ) : MutableMicroprogram()
+        val mask: Array<Boolean>,
+        private val entryPointAddressGetter: MicroprogramWithBuildInfo.() -> UByte
+    ) : MutableMicroprogram() {
+        override fun get(address: UByte): Microcommand = this.commands[address.toInt()]
+
+        override val entryPointAddress: UByte
+            get() = this.entryPointAddressGetter(this)
+    }
 
     companion object {
         @JvmStatic
-        internal fun build(builder: MicroprogramBuilder.() -> Unit): MicroprogramWithBuildInfo = MicroprogramBuilder().apply(builder).let { mp ->
+        internal fun build(entryPointAddress: (MicroprogramWithBuildInfo.() -> UByte)? = null, builder: MicroprogramBuilder.() -> Unit): MicroprogramWithBuildInfo = MicroprogramBuilder().apply(builder).let { mp ->
             return@let MicroprogramWithBuildInfo(
                 mp.labels,
                 mp.objects.map { obj -> obj(mp.labels) }.toTypedArray().padEnd(Microprogram.MICROPROGRAM_SIZE, Microcommand.Empty),
-                mp.mask.toTypedArray().padEnd(Microprogram.MICROPROGRAM_SIZE, false)
+                mp.mask.toTypedArray().padEnd(Microprogram.MICROPROGRAM_SIZE, false),
+                entryPointAddress ?: { throw NotImplementedError("Точка входа в миеропрограмму не задана") }
             )
         }
     }

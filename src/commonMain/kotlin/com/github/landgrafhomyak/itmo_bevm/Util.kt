@@ -40,6 +40,8 @@ fun UByte.toHex(tetrads: UByte) = this@toHex.toString(16).padStart(tetrads.toInt
 
 inline fun <reified T> Array<T>.padEnd(size: UInt, elem: T) = this@padEnd + Array(size.toInt() - this.size) { elem }
 
-fun microprogramWithBuildInfo(builder: MicroprogramBuilder.() -> Unit) = MicroprogramBuilder.build(builder)
-fun microprogram(builder: MicroprogramBuilder.() -> Unit) = microprogramWithBuildInfo(builder) as MutableMicroprogram
+fun microprogramWithBuildInfo(entryPointAddress: (MicroprogramBuilder.MicroprogramWithBuildInfo.() -> UByte)? = null, builder: MicroprogramBuilder.() -> Unit) = MicroprogramBuilder.build(entryPointAddress, builder)
+fun microprogramWithBuildInfo(entryPointAddress: UByte, builder: MicroprogramBuilder.() -> Unit) = microprogramWithBuildInfo({ entryPointAddress }, builder)
+fun microprogram(entryPointAddress: (MicroprogramBuilder.MicroprogramWithBuildInfo.() -> UByte)? = null, builder: MicroprogramBuilder.() -> Unit) = microprogramWithBuildInfo(entryPointAddress, builder) as MutableMicroprogram
+fun microprogram(entryPointAddress: UByte, builder: MicroprogramBuilder.() -> Unit) = microprogram({ entryPointAddress }, builder)
 

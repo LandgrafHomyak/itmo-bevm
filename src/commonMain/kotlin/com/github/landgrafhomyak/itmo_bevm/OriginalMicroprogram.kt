@@ -2,13 +2,10 @@ package com.github.landgrafhomyak.itmo_bevm
 
 
 object OriginalMicroprogram : Microprogram, OriginalComponent {
+    @Suppress("NothingToInline")
     private inline fun MicroprogramBuilder.goto(label: String) = CTRL(RDPS, LTOL, 0b00010000u, false, label)
+    @Suppress("NothingToInline")
     private inline fun MicroprogramBuilder.ccr(bit: UByte, expected: Boolean, label: String) = CTRL(RDCR, if (bit >= 8u) HTOL else LTOL, 1u shl (if (bit >= 8u) (bit.toInt() - 8) else bit.toInt()), expected, label)
-
-    override val labels: Map<String, UByte>
-        get() = this.origin.labels
-    override val commands: Array<out Microcommand>
-        get() = this.origin.commands
 
     @Suppress("SpellCheckingInspection")
     private val origin = microprogram {
@@ -361,5 +358,14 @@ object OriginalMicroprogram : Microprogram, OriginalComponent {
         goto("INFETCH")
         -"RESERVED"
     }
+
+    override val labels: Map<String, UByte>
+        get() = this.origin.labels
+    override val commands: Array<out Microcommand>
+        get() = this.origin.commands
+
+    override fun get(address: UByte): Microcommand = this.origin[address]
+
+    override val entryPointAddress: UByte = this.labels["START"]!!
 
 }

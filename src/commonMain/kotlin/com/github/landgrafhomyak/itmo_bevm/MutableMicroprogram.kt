@@ -6,7 +6,7 @@ abstract class MutableMicroprogram : Microprogram {
     abstract override val commands: Array<Microcommand>
 
     fun overwrite(mp: MicroprogramBuilder.() -> Unit) {
-        val newMP = microprogramWithBuildInfo(mp)
+        val newMP = microprogramWithBuildInfo(null, mp)
         (this.labels.keys intersect newMP.labels.keys).apply {
             if (isNotEmpty()) {
                 throw LabelDuplicationException(first())
