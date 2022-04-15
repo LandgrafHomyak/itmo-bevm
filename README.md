@@ -3,6 +3,8 @@
 [![JitPack](https://jitpack.io/v/landgrafhomyak/itmo-bevm.svg)](https://jitpack.io/#landgrafhomyak/itmo-bevm)
 ![CLI](https://github.com/landgrafhomyak/itmo-bevm/actions/workflows/cli.yml/badge.svg)
 
+[![Kotlin/MPP](https://img.shields.io/badge/Kotlin/MPP-7F52FF.svg)](https://kotlinlang.org/docs/multiplatform.html)
+
 # Базовая электронно-вычислительная машина
 
 Альтернативная реализация БЭВМ для [ИТМО](https://itmo.ru)
